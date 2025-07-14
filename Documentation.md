@@ -1,4 +1,87 @@
 # 384wInfectiousTiterAssay-Statistics
+
+## Overview
+This function analyzes fluorescence response (FR) count data across various dilution factors from an Excel spreadsheet. It computes statistical summaries (mean, standard deviation, coefficient of variation), determines usable upper and lower FR count thresholds based on precision and linearity metrics, and produces a series of visual plots for interpretation.
+
+Each block:
+- Contains 16 replicate well counts  
+- Is derived from dilution factors applied across multiple folds (e.g., √10× in this example)  
+- Contributes to curve-based detection of usable FR count range  
+
+---
+
+## Parameters
+
+| Parameter    | Type    | Default    | Description                                              |
+|--------------|---------|------------|----------------------------------------------------------|
+| `file_path`  | `str`   | _Required_ | Path to the Excel file containing FR count data.         |
+| `sheet_name` | `str`   | _Required_ | Name of the Excel sheet to load data from.               |
+
+---
+
+## Functionality
+
+### Data Handling
+- Loads data from the Excel file with `header=None`, converting all entries to numeric.  
+- Organizes the data into 16-column replicate blocks per fold.  
+- Suppresses non-critical warnings.  
+
+### Statistical Computation
+- For each block (excluding the positive control at index 0):  
+  - **Mean FR count**  
+  - **Standard deviation**  
+  - **Coefficient of variation (CV)** = std / mean  
+- Constructs a dilution factor (DF) series as  
+- DF = base_start × (fold ** block_index)
+
+
+### CV Normalization
+- Scales all CV values into the [0, 1] range for visual and comparative analysis:
+cv_norm = (cv – cv.min()) / (cv.max() – cv.min())
+
+### Threshold Determination
+- **Upper Limit:**  
+Fit successive linear regressions (mean vs DF) until the R² drops below 0.99 (default).
+  Method:
+  - Incrementally fits a linear regression model to increasing subsets of the dilution series.
+  - Stops once R² drops below 0.99.
+  - Returns the last point where the model was still a good fit.
+  Why:
+  - A high R² indicates linear response; deviation marks the upper bound of reliable quantification. 
+- **Lower Limit:**  
+  Locate the DF where normalized CV is closest to 0.1 (default).
+  - Method:
+    - Finds the point where normalized CV is closest to 0.1.
+    - Extracts corresponding mean and dilution factor.
+  - Why:
+    - High variability (CV > 0.1) implies data unreliability. 
+    - Thus, CV = 0.1 is used as a lower limit of acceptable noise.
+### Visualization
+Produces three plots:
+1. **Dilution vs Mean FR** (log-log scale, with upper limit line)  
+2. **Dilution vs Normalized CV** (log-log scale, with CV = 0.1 line)  
+3. **Normalized CV vs Mean FR** (log-y scale, with lower limit lines)  
+
+All plots include axis labels, legends, and tight layout.
+
+---
+
+## Notes
+- Assumes exactly 16 replicates per block.  
+- You can adjust `r2_thresh` or `target_cv` by modifying the function defaults.  
+- In this template, only one fold (`√10×`) is shown — extend `folds` list for more.
+
+---
+
+## Example
+
+```python
+file_path  = r"C:/Users/your_name/your_data.xlsx"
+sheet_name = "Sheet2"
+
+analyze_fr_data(file_path, sheet_name)
+```
+
 ## `bootstrap_count_histograms` — Replicate-wise Bootstrap Histogram Visualizer
 
 ### Overview

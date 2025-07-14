@@ -19,7 +19,23 @@ This repository provides Python tools and Jupyter notebooks for analyzing and vi
 - **Console Summary Output:**  
   Print summary statistics (mean and SD) for each replicate size directly to the console.
 
----
+Threshold Determination
+- **Upper Limit:**  
+Fit successive linear regressions (mean vs DF) until the R² drops below 0.99 (default).
+  Method:
+  - Incrementally fits a linear regression model to increasing subsets of the dilution series.
+  - Stops once R² drops below 0.99.
+  - Returns the last point where the model was still a good fit.
+  Why:
+  - A high R² indicates linear response; deviation marks the upper bound of reliable quantification. 
+- **Lower Limit:**  
+  Locate the DF where normalized CV is closest to 0.1 (default).
+  - Method:
+    - Finds the point where normalized CV is closest to 0.1.
+    - Extracts corresponding mean and dilution factor.
+  - Why:
+    - High variability (CV > 0.1) implies data unreliability. 
+    - Thus, CV = 0.1 is used as a lower limit of acceptable noise.
 
 ## Getting Started
 
